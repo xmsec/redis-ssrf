@@ -132,7 +132,7 @@ def generate_payload(ip,port,passwd,mode):
 if __name__=="__main__":   
 
     # 0 for webshell ; 1 for re shell ; 2 for ssh key ; 3 for redis rce ; 31 for rce clean up
-    # suggest cleaning up when mode 3 has been used
+    # suggest cleaning up when mode 3 used
     mode=3 
 
     # need auth or not
