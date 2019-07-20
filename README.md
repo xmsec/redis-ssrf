@@ -24,7 +24,7 @@ for rce usage:
 `> python rogue-server.py`   
 `> Accepted connection from 192.168.x.x`
 
-(Need to compile a module at first or download other's)
+(Need to compile a module named exp.so at first or download other's and store it with rogue-server.py)
 ## Reference
 Inspired by https://github.com/n0b0dyCN/redis-rogue-server
 
