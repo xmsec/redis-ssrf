@@ -1,6 +1,6 @@
 # redis-ssrf
 1. ssrf to write files. eg: webshell and ssh key
-2. ssrf to rce 3.x - 4.x
+2. ssrf to rce 3.x - 5.x
 
 ## Requirements
 ssrf-redis.py :  python2.x 3.x 
